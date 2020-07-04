@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: team-microservice
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      robusta: playground-team
+  template:
+    metadata:
+      labels:
+        robusta: playground-team
+    spec:
+      containers:
+      - name: team
+        env:
+          - name: POSTGRES_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: hostname-config
+                key: postgres_host
+        image: robusta:playground-team 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: team-entrypoint
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    robusta: playground-team	
+  ports:
+  - port: 1010
+    targetPort: 4345
+    nodePort: 30001	

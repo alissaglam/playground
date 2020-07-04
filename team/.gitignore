@@ -1,0 +1,72 @@
+### Gradle ###
+**/out/
+**/build/
+.gradle/
+
+### Maven ###
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea/*
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+*.iws
+*.iml
+*.ipr
+
+.status
+.version
+
+### NetBeans ###
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### Documentation ###
+docs/node_modules
+docs/yarn-error.log
+docs/api.apib
+docs/out
+.DS_Store
+
+### Logs ###
+/logs/
+/bayzat-backend/logs/*
+/docs/snowboard*
+
+### Dev Login ###
+bayzat-backend/admin/src/main/kotlin/com/bayzat/admin/controller/DevLoginController.kt
+
+### JWT ###
+var/jwt/*
+
+# Managed by node/npm
+docs/node_modules
+
+# Output of aglio module
+docs/out
+
+# Yarn
+docs/yarn-error.log
+docs/api.apib
+docs/snowboard*
+
+# Local file storage
+var/uploads/*
+
+# Terraform
+.terraform
+**/.terraform

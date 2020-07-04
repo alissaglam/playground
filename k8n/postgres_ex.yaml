@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-container
+  template:
+    metadata:
+      labels:
+        app: postgres-container
+    spec:
+      containers:
+        - name: postgres-container
+          image: postgres
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: playground_team
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-volume-mount
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-volume-mount
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+        - name: postgres-credentials
+          secret:
+            secretName: postgres-credentials
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pl-team-rdbms
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    app: postgres-container
+  ports:
+  - port: 9988
+    targetPort: 5432
+    nodePort: 30876
+

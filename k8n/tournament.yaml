@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tournament-microservice
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      robusta: playground-tournament
+  template:
+    metadata:
+      labels:
+        robusta: playground-tournament
+    spec:
+      containers:
+      - name: tournament
+        env:
+          - name: POSTGRES_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: hostname-config
+                key: postgres_host
+        image: robusta:playground-tournament 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tournament-entrypoint
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    robusta: playground-tournament
+  ports:
+  - port: 1011
+    targetPort: 4346
+    nodePort: 30002	

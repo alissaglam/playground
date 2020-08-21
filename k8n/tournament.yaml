@@ -16,23 +16,35 @@ spec:
       containers:
       - name: tournament
         env:
+          - name: POSTGRES_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: postgres-config
+                key: postgres_username
           - name: POSTGRES_HOST
             valueFrom:
               configMapKeyRef:
-                name: hostname-config
+                name: postgres-config
                 key: postgres_host
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: postgres_password
         image: robusta:playground-tournament 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: tournament-entrypoint
+  name: tournament-entrypoint-loadbalancer
   namespace: default
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     robusta: playground-tournament
   ports:
-  - port: 1011
+  - protocol: TCP
+    port: 1011
     targetPort: 4346
-    nodePort: 30002	
+    name: http
+

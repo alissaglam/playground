@@ -16,23 +16,34 @@ spec:
       containers:
       - name: team
         env:
+          - name: POSTGRES_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: postgres-config
+                key: postgres_username
           - name: POSTGRES_HOST
             valueFrom:
               configMapKeyRef:
-                name: hostname-config
+                name: postgres-config
                 key: postgres_host
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+                secretKeyRef:
+                  name: passwords
+                  key: postgres_password
         image: robusta:playground-team 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: team-entrypoint
+  name: team-entrypoint-loadbalancer
   namespace: default
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     robusta: playground-team	
   ports:
-  - port: 1010
+  - protocol: TCP
+    port: 1010
     targetPort: 4345
-    nodePort: 30001	
+    name: http

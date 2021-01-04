@@ -1,6 +1,7 @@
 package io.robusta.team.common.event.entity
 
 import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.Entity
 import javax.persistence.Id
@@ -11,5 +12,5 @@ data class EventProduce(
         val id: UUID,
         val event: String,
         val payload: String,
-        val createdAt: Instant
+        val createdAt: LocalDateTime
 )

@@ -13,7 +13,6 @@ class EventConsumeAspect(
         private val eventService: EventService
 ) {
 
-    //@Around("@annotation(io.robusta.team.common.event.EventConsumer.*)")
     @Around("execution(* (@EventConsumer *).*(..))")
     fun eventConsumeLog(joinPoint: ProceedingJoinPoint): Any? {
         val event = joinPoint.args[0] as Event

@@ -9,6 +9,7 @@ import io.robusta.team.common.event.repository.EventProduceRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -22,11 +23,11 @@ class EventService(
         val eventId = UUID.randomUUID()
         event.eventId = eventId
         val eventJsonPayload = jacksonObjectMapper().writeValueAsString(event)
-        eventProduceRepository.save(EventProduce(eventId, event.getEventName(), eventJsonPayload, Instant.now()))
+        eventProduceRepository.save(EventProduce(eventId, event.getEventName(), eventJsonPayload, LocalDateTime.now()))
     }
 
     @Transactional
     fun saveEventConsume(event: Event) {
-        eventConsumeRepository.save(EventConsume(event.eventId, Instant.now()))
+        eventConsumeRepository.save(EventConsume(event.eventId, LocalDateTime.now()))
     }
 }

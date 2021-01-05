@@ -1,6 +1,5 @@
 package io.robusta.team.controller.payload
 
-data class TeamPayload(
-        val id: Long,
+class UpsertTeamPayload (
         val name: String
 )

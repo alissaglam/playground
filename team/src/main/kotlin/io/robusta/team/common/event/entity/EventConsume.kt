@@ -1,6 +1,5 @@
 package io.robusta.team.common.event.entity
 
-import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.Entity
@@ -10,5 +9,6 @@ import javax.persistence.Id
 data class EventConsume(
         @Id
         val id: UUID,
-        val createdAt: LocalDateTime
+        val createdAt: LocalDateTime,
+        val fallback: Boolean
 )

@@ -1,9 +1,9 @@
 package io.robusta.team.common.event
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.robusta.team.common.event.entity.FallbackEventConsumeLog
 import io.robusta.team.common.event.repository.EventProduceRepository
 import io.robusta.team.common.event.repository.FallbackEventConsumeLogRepository
+import io.robusta.team.common.event.service.EventService
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationEventPublisher
@@ -11,13 +11,13 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.util.*
 
 @Component
 class FallbackEventConsumer(
         private val eventProduceRepository: EventProduceRepository,
         private val fallbackEventConsumeLogRepository: FallbackEventConsumeLogRepository,
-        private val applicationEventPublisher: ApplicationEventPublisher
+        private val applicationEventPublisher: ApplicationEventPublisher,
+        private val eventService: EventService
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -27,17 +27,16 @@ class FallbackEventConsumer(
     @Transactional
     fun fallbackEventConsume() {
         logger.info("Fallback event consumer...")
-        val fallbackEventConsumeLog = fallbackEventConsumeLogRepository.findAll().firstOrNull()
-                ?: FallbackEventConsumeLog(1, UUID.randomUUID(), LocalDateTime.now().minusYears(2))
-        val unprocessedEvents = eventProduceRepository.getUnprocessedEventsTop1000(fallbackEventConsumeLog.lastlyConsumedEventProduceTime).toList()
+
+        val fallbackEventConsumeLog = eventService.getFallbackEventConsumerLog()
+        val queryTime = LocalDateTime.now()
+        val unprocessedEvents = eventProduceRepository.getUnprocessedEvents(fallbackEventConsumeLog.lastlyConsumedEventProduceTime).toList()
         unprocessedEvents.forEach { event ->
             val applicationEvent = jacksonObjectMapper().readValue(event.payload, Class.forName(event.event))
+            (applicationEvent as Event).fallback = true
             applicationEventPublisher.publishEvent(applicationEvent)
         }
 
-        val updatedFallbackConsumeLog = unprocessedEvents.lastOrNull()?.let { lastEvent ->
-            fallbackEventConsumeLog.copy(lastlyConsumedEventId = lastEvent.id, lastlyConsumedEventProduceTime = lastEvent.createdAt)
-        } ?: fallbackEventConsumeLog
-        fallbackEventConsumeLogRepository.save(updatedFallbackConsumeLog)
+        eventService.saveFallbackEventConsumerLog(unprocessedEvents.lastOrNull(), queryTime)
     }
 }

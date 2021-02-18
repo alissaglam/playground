@@ -46,5 +46,13 @@ This command us used to connect postgres db in the cluster with psql command lin
 ## team
 A microservice used to manage team (soccer team) data and written with Kotlin & SpringBoot
 
+### Execute following commands on root folder of team service to build docker image
+<code>./mvnw clean install</code>\
+<code>docker build .</code>\
+
 ## tournament
 A microservice used to manage tournaments and written with Java & SpringBoot
+
+### Execute following commands on root folder of tournament service to build docker image
+<code>./gradlew clean build</code>\
+<code>docker build .</code>\

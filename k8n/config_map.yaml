@@ -5,4 +5,4 @@ metadata:
   namespace: default
 data:
   postgres_username: postgres
-  postgres_host: 10.100.133.94
+  postgres_host: 10.111.246.177

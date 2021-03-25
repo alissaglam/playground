@@ -2,6 +2,7 @@ package io.robusta.tournament.controller;
 
 import io.robusta.tournament.common.exception.ResourceNotFoundException;
 import io.robusta.tournament.controller.payload.TournamentPayload;
+import io.robusta.tournament.controller.payload.TournamentTeamsPayload;
 import io.robusta.tournament.controller.payload.UpsertTournamentPayload;
 import io.robusta.tournament.entity.Tournament;
 import io.robusta.tournament.repository.TournamentRepository;
@@ -36,6 +37,12 @@ public class TournamentController {
     public List<TournamentPayload> list() {
         return repository.findAll().stream().map((it) ->
                 new TournamentPayload(it.getId(), it.getName())).collect(Collectors.toList());
+    }
+
+    @GetMapping("/tournaments/{tournamentId}/teams")
+    public TournamentTeamsPayload getAllTeamsOfTournament(@PathVariable Long tournamentId,
+                                                          @RequestParam(defaultValue = "0", required = false) Long teamServiceWaitInMilis) {
+        return service.getTeamsByTournamentId(tournamentId, teamServiceWaitInMilis);
     }
 
     @PostMapping("/tournaments")

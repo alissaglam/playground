@@ -1,6 +1,8 @@
 package io.robusta.tournament.service;
 
 import io.robusta.tournament.common.exception.ResourceNotFoundException;
+import io.robusta.tournament.controller.payload.TeamPayload;
+import io.robusta.tournament.controller.payload.TournamentTeamsPayload;
 import io.robusta.tournament.controller.payload.UpsertTournamentPayload;
 import io.robusta.tournament.entity.Tournament;
 import io.robusta.tournament.repository.TournamentRepository;
@@ -9,14 +11,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class TournamentService {
 
     private final TournamentRepository repository;
 
+    private final TeamRestService restService;
+
     @Autowired
-    public TournamentService(TournamentRepository repository) {
+    public TournamentService(TournamentRepository repository, TeamRestService restService) {
         this.repository = repository;
+        this.restService = restService;
     }
 
     @Transactional
@@ -53,5 +60,13 @@ public class TournamentService {
     private Tournament getTournament(Long tournamentId) {
         return repository.findById(tournamentId).orElseThrow(() ->
                 new ResourceNotFoundException(Tournament.class, tournamentId));
+    }
+
+    @Transactional(readOnly = true)
+    public TournamentTeamsPayload getTeamsByTournamentId(Long tournamentId, Long teamServiceWaitInMilis) {
+        Tournament tournament = repository.findById(tournamentId).orElseThrow(() -> new ResourceNotFoundException(Tournament.class, tournamentId));
+
+        List<TeamPayload> teams = restService.retrieveTeamsFromTeamsService(teamServiceWaitInMilis);
+        return new TournamentTeamsPayload(tournament, teams);
     }
 }

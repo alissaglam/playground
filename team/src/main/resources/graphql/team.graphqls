@@ -1,0 +1,17 @@
+type Query {
+    teams: [Team!]
+}
+
+
+type Team {
+    id: Int!,
+    name: String!
+}
+
+extend type Query {
+    getTeamsById(id: Int!) : Team
+}
+
+type Mutation {
+    createTeam(name: String!) : Team!
+}

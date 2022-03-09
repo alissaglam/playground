@@ -1,10 +1,14 @@
 package io.robusta.tournament.service;
 
 import io.robusta.tournament.common.exception.ResourceNotFoundException;
+import io.robusta.tournament.controller.payload.AddTeamPayload;
 import io.robusta.tournament.controller.payload.UpsertTournamentPayload;
+import io.robusta.tournament.entity.Team;
 import io.robusta.tournament.entity.Tournament;
+import io.robusta.tournament.repository.TeamRepository;
 import io.robusta.tournament.repository.TournamentRepository;
 import io.robusta.tournament.service.exception.DuplicateTournamentNameException;
+import io.robusta.tournament.service.exception.TeamAlreadyExistingInTournamentException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -12,10 +16,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -24,6 +29,9 @@ public class TournamentServiceTest {
 
     @Mock
     private TournamentRepository repository;
+
+    @Mock
+    private TeamRepository teamRepository;
 
     @InjectMocks
     private TournamentService service;
@@ -89,5 +97,55 @@ public class TournamentServiceTest {
         assertThrows(DuplicateTournamentNameException.class, () -> {
             service.update(1L, new UpsertTournamentPayload("test_updated"));
         });
+    }
+
+    @Test
+    public void testAddTeamToTournamentTeamAlreadyExisting() {
+        Team existingTeam = new Team();
+        existingTeam.setId(1L);
+        given(repository.findById(10L)).willReturn(Optional.of(new Tournament("test", Collections.singletonList(existingTeam))));
+        assertThrows(TeamAlreadyExistingInTournamentException.class, () -> service.addTeam(10L, new AddTeamPayload(1L)));
+    }
+
+    @Test
+    public void testAddTeamToTournamenTournamentNotExisting() {
+        Team existingTeam = new Team();
+        existingTeam.setId(1L);
+        given(repository.findById(10L)).willReturn(Optional.ofNullable(null));
+        assertThrows(ResourceNotFoundException.class, () -> service.addTeam(10L, new AddTeamPayload(2L)));
+    }
+
+    @Test
+    public void testAddTeamToTournamentTeamNotExisting() {
+        Team existingTeam = new Team();
+        existingTeam.setId(1L);
+        given(repository.findById(10L)).willReturn(Optional.of(new Tournament("test", Collections.singletonList(existingTeam))));
+        given(teamRepository.findById(2L)).willReturn(Optional.ofNullable(null));
+        assertThrows(ResourceNotFoundException.class, () -> service.addTeam(10L, new AddTeamPayload(2L)));
+    }
+
+    @Test
+    public void testAddTeamToTournamentSuccessfully() {
+        given(repository.findById(10L)).willReturn(Optional.of(new Tournament("test")));
+        Team newly_added_team = new Team("Newly Added Team");
+        given(teamRepository.findById(2L)).willReturn(Optional.of(newly_added_team));
+        Tournament tournament = service.addTeam(10L, new AddTeamPayload(2L));
+        assertEquals(1, tournament.getTeams().size());
+        assertTrue(tournament.getTeams().stream().anyMatch(team -> team.getName().equals("Newly Added Team")));
+    }
+
+    @Test
+    public void testAddTeamToTournamentSuccessfullyWhenTeamListIsNotEmpty() {
+        Team existingTeam = new Team("a");
+        existingTeam.setId(1L);
+        ArrayList<Team> teamList = new ArrayList<>();
+        teamList.add(existingTeam);
+        given(repository.findById(10L)).willReturn(Optional.of(new Tournament("test", teamList)));
+        Team teamInTheDb = new Team("Newly Added Team");
+        teamInTheDb.setId(2L);
+        given(teamRepository.findById(2L)).willReturn(Optional.of(teamInTheDb));
+        Tournament tournament = service.addTeam(10L, new AddTeamPayload(2L));
+        assertEquals(2, tournament.getTeams().size());
+        assertTrue(tournament.getTeams().stream().anyMatch(team -> team.getId().equals(2L)));
     }
 }
